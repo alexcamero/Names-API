@@ -8,4 +8,8 @@ def create_app(test_config = None):
     def hello(name):
         return f"Hello, {escape(name)}."
 
+    @app.route('/')
+    def default():
+        return f"Hello, world."
+
     return app
