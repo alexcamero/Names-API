@@ -1,6 +1,15 @@
+cached-property==1.5.2
 click==8.0.3
 Flask==2.0.2
+greenlet==1.1.2
+inflection==0.5.1
 itsdangerous==2.0.1
 Jinja2==3.0.2
 MarkupSafe==2.0.1
+mypy-extensions==0.4.3
+python-dotenv==0.19.1
+SQLAlchemy==1.4.26
+sqlalchemy-orm==1.2.2
+typing-extensions==3.10.0.2
+typing-inspect==0.7.1
 Werkzeug==2.0.2
