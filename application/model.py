@@ -1,5 +1,8 @@
-from sqlalchemy import create_engine, MetaData, Table, Column, Integer, String, ForeignKey
+from sqlalchemy import create_engine, MetaData, Table, Column, Integer, String, ForeignKey, select
 from sqlalchemy.orm import registry, relationship, Session
+import click
+from flask import current_app, g
+from flask.cli import with_appcontext
 
 import config
 
