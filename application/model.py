@@ -1,7 +1,11 @@
 from sqlalchemy import create_engine, MetaData, Table, Column, Integer, String, ForeignKey
-from sqlalchemy.orm import registry, relationship
+from sqlalchemy.orm import registry, relationship, Session
 
-engine = create_engine("sqlite+pysqlite:///:memory:", echo=False)
+import config
+
+engine = create_engine(f"mysql+pymysql://{config.DATABASE_USER}:{config.DATABASE_PASSWORD}@{config.DATABASE_HOST}/{config.DATABASE_NAME}?charset=utf8mb4")
+
+"""
 
 metadata_obj = MetaData()
 
@@ -22,6 +26,8 @@ address_table = Table(
 
 metadata_obj.create_all(engine)
 
+"""
+
 mapper_registry = registry()
 Base = mapper_registry.generate_base()
 
@@ -30,7 +36,7 @@ class User(Base):
 
     id = Column(Integer, primary_key = True)
     name = Column(String(30))
-    fullname = Column(String)
+    fullname = Column(String(100))
 
     addresses = relationship("Address", back_populates = "user")
 
@@ -41,13 +47,17 @@ class Address(Base):
     __tablename__ = 'address'
 
     id = Column(Integer, primary_key = True)
-    email_address = Column(String, nullable = False)
+    email_address = Column(String(50), nullable = False)
     user_id = Column(Integer, ForeignKey('user_account.id'))
 
     user = relationship("User", back_populates = "addresses")
 
     def __repr__(self):
         return f"Address(id={self.id!r}, email_address={self.email_address!r})"
+
+mapper_registry.metadata.create_all(engine)
+
+"""
 
 sandy = User(name = "sandy", fullname = "Sandy Cheeks")
 sunny_lane = Address(email_address="sl@sl.com", user=sandy)
@@ -65,4 +75,4 @@ print(gell.addresses)
 print(sunny_lane.user)
 print(sandy.addresses)
 print(new_place.user)
-
+"""
