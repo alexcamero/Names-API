@@ -1,3 +1,5 @@
+from os import environ
+
 from markupsafe import escape
 from flask import Flask
 from sqlalchemy import create_engine, MetaData, Table, select
@@ -23,6 +25,7 @@ def create_app(test_config = None):
 
     @app.route('/')
     def default():
-        return f"Hello, world."
+        x = environ.get('FLASK_APP')
+        return f"Hello, world. Check out this cool {x}."
 
     return app
