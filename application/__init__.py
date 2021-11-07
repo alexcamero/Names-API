@@ -1,4 +1,4 @@
-from os import environ
+from os import environ, path
 
 from markupsafe import escape
 from flask import Flask
@@ -12,7 +12,9 @@ def create_app(test_config = None):
     @app.route('/<name>')
     def hello(name):
         reply = [f"Hello, {escape(name)}."]
-        engine = create_engine(f"mysql+pymysql://{app.config['DATABASE_USER']}:{app.config['DATABASE_PASSWORD']}@{app.config['DATABASE_HOST']}/{app.config['DATABASE_NAME']}?charset=utf8mb4")
+        basedir = path.abspath(path.dirname(__file__))
+        path_to_ca = path.join(basedir, "DigiCertGlobalRootCA.crt.pem")
+        engine = create_engine(f"mysql+pymysql://{app.config['DATABASE_USER']}:{app.config['DATABASE_PASSWORD']}@{app.config['DATABASE_HOST']}/{app.config['DATABASE_NAME']}?ssl_ca={path_to_ca}")
         metadata_obj = MetaData()
         best_names = Table("best_names", metadata_obj, autoload_with = engine)
         stmt = select(best_names).where(best_names.c.name == name)
