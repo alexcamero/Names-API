@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, MetaData, Table, Column, Integer, String, ForeignKey, select
+from sqlalchemy import create_engine, MetaData, Table, Column, Integer, String, ForeignKey, select, Enum
 from sqlalchemy.orm import registry, relationship, Session
 import click
 from flask import current_app, g
@@ -34,29 +34,46 @@ metadata_obj.create_all(engine)
 mapper_registry = registry()
 Base = mapper_registry.generate_base()
 
-class User(Base):
-    __tablename__ = 'user_account'
+class Name(Base):
+    __tablename__ = 'name'
 
     id = Column(Integer, primary_key = True)
-    name = Column(String(30))
-    fullname = Column(String(100))
+    name = Column(String(50))
 
-    addresses = relationship("Address", back_populates = "user")
+    data = relationship("Data", back_populates = "name")
 
     def __repr__(self):
-        return f"User(id = {self.id!r}, name = {self.name!r}, fullname = {self.fullname!r})"
+        return self.name
 
-class Address(Base):
-    __tablename__ = 'address'
+class Location(Base):
+    __tablename__ = 'location'
 
     id = Column(Integer, primary_key = True)
-    email_address = Column(String(50), nullable = False)
-    user_id = Column(Integer, ForeignKey('user_account.id'))
+    name = Column(String(100))
 
-    user = relationship("User", back_populates = "addresses")
+    data = relationship("Data", back_populates = "location")
 
     def __repr__(self):
-        return f"Address(id={self.id!r}, email_address={self.email_address!r})"
+        return self.name
+
+class Data(Base):
+    __tablename__ = 'data'
+
+    id = Column(Integer, primary_key = True)
+    name_id = Column(Integer, ForeignKey('name.id'))
+    location_id = Column(Integer, ForeignKey('location.id'))
+    year = Column(Integer)
+    value = Column(Integer)
+    sex = Column(Enum('F','M'))
+
+    name = relationship("Name", back_populates = "data")
+    location = relationship("Location", back_populates = "data")
+
+    def __repr__(self):
+        return f"Data(year = {self.year}, location = {self.location!r}, name = {self.name!r}, sex = {self.sex!r}, count = {self.value})"
+
+
+
 
 mapper_registry.metadata.create_all(engine)
 
