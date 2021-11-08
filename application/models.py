@@ -1,3 +1,5 @@
+from os import path
+
 from sqlalchemy import create_engine, MetaData, Table, Column, Integer, String, ForeignKey, select, Enum
 from sqlalchemy.orm import registry, relationship, Session
 import click
@@ -46,16 +48,34 @@ class Data(Base):
         return f"Data(year = {self.year}, location = {self.location!r}, name = {self.name!r}, sex = {self.sex!r}, count = {self.value})"
 
 
-def get_engine():
+def get_engine(remote = False):
     if 'engine' not in g:
-        g.engine = create_engine(current_app.config['ENGINE'])
+        if remote:
+            g.engine = create_engine(current_app.config['REMOTE_ENGINE'])
+        else:
+            g.engine = create_engine(current_app.config['ENGINE'])
     return g.engine
 
 @click.command('init-db')
+@click.option('--remote', default = False)
 @with_appcontext
-def init_db_command():
-    engine = get_engine()
+def init_db_command(remote):
+    engine = get_engine(remote)
     mapper_registry.metadata.create_all(engine)
+    click.echo('Database initialized.')
+
+
+@click.command('process-year')
+@click.option('--remote', default = False)
+@click.option('--year', prompt = True)
+@with_appcontext
+def process_year(year, remote):
+    file_path = path.join(current_app.config['DATA_DIR'], 'year', f"yob{year}.txt")
+    with open(file_path, 'r') as file:
+        rows = [line[0:-1].split(',') for line in file]
+    
+    
 
 def init_app(app):
     app.cli.add_command(init_db_command)
+    app.cli.add_command(process_year)

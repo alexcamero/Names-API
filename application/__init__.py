@@ -1,4 +1,4 @@
-from os import environ, path
+from os import environ
 
 from markupsafe import escape
 from flask import Flask

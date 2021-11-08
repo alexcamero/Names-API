@@ -134,3 +134,6 @@ dmypy.json
 
 # config
 db_config.json
+
+# folder with data files
+names_data
