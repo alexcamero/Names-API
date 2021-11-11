@@ -4,9 +4,9 @@ from dotenv import load_dotenv
 BASE_DIR = path.abspath(path.dirname(__file__))
 load_dotenv(path.join(BASE_DIR, '..', '.env'))
 
-LOCAL = environ.get('LOCAL')
-TESTING = environ.get('TESTING')
-DEBUG = environ.get('DEBUG')
+LOCAL = environ.get('LOCAL') == 'True'
+TESTING = environ.get('TESTING') == 'True'
+DEBUG = environ.get('DEBUG') == 'True'
 DATABASE_HOST = environ.get('DATABASE_HOST')
 DATABASE_USER = environ.get('DATABASE_USER')
 DATABASE_PASSWORD = environ.get('DATABASE_PASSWORD')

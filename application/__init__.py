@@ -8,6 +8,8 @@ def create_app(test_config = None):
     app = Flask(__name__)
     if test_config == None:
         app.config.from_pyfile('config.py')
+    else:
+        app.config.from_mapping(test_config)
 
     from . import models
     models.init_app(app)
