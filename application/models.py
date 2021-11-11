@@ -65,7 +65,7 @@ def init_db_command(remote):
     click.echo('Database initialized.')
 
 
-@click.command('process-year')
+@click.command('process-usa-year')
 @click.option('--remote', default = False)
 @click.option('--year', prompt = True)
 @with_appcontext
@@ -73,6 +73,7 @@ def process_year(year, remote):
     file_path = path.join(current_app.config['DATA_DIR'], 'year', f"yob{year}.txt")
     with open(file_path, 'r') as file:
         rows = [line[0:-1].split(',') for line in file]
+    engine = get_engine(remote)
     
     
 
