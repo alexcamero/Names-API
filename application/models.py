@@ -7,6 +7,7 @@ from flask import current_app, g
 from flask.cli import with_appcontext
 from bs4 import BeautifulSoup as bs
 import requests
+from progress.bar import Bar
 
 state_dict = {'AL': 'Alabama', 'AK': 'Alaska', 'AZ': 'Arizona', 'AR': 'Arkansas', 'CA': 'California', 
 'CO': 'Colorado', 'CT': 'Connecticut', 'DE': 'Delaware', 'DC': 'Washington DC', 'FL': 'Florida',
@@ -238,6 +239,60 @@ def get_usa_totals(remote, year = False):
         print(f"There was an issue: Status Code {response.status_code}")
         return False
 
+@click.command('quick-migrate')
+@with_appcontext
+def quick_migrate():
+    local_e = create_engine(current_app.config['ENGINE'])
+    remote_e = create_engine(current_app.config['REMOTE_ENGINE'])
+    with local_e.connect() as cnx:
+        with remote_e.connect() as r_cnx:
+            locations = cnx.execute("SELECT * FROM location order by id")
+            locations = ", ".join([f"({l.id}, '{l.name}')" for l in locations])
+            query = f"INSERT INTO location (id, name) VALUES {locations}"
+            r_cnx.execute(query)
+            print("Locations migrated")
+            max_id = int(cnx.execute("SELECT MAX(id) FROM name").scalar())
+            print(f"{max_id} names to migrate")
+            num_iterations = (max_id // 100) + 1
+            with Bar('Names...') as bar:
+                for i in range(num_iterations):
+                    lower = 100 * i
+                    upper = 100 * (i+1)
+                    names = cnx.execute(f"SELECT * FROM name WHERE id > {lower} AND id <= {upper}")
+                    names = ", ".join([f"({n.id}, '{n.name}')" for n in names])
+                    query = f"INSERT INTO name (id, name) VALUES {names}"
+                    r_cnx.execute(query)
+                    bar.next()
+            max_id = int(cnx.execute("SELECT MAX(id) FROM data WHERE name_id IS NULL").scalar())
+            print(f"{max_id} US totals to migrate")
+            num_iterations = (max_id // 100) + 1
+            with Bar('US Totals...') as bar:
+                for i in range(num_iterations):
+                    lower = 100 * i
+                    upper = 100 * (i+1)
+                    data = cnx.execute(f"SELECT * FROM data WHERE id > {lower} AND id <= {upper} AND name_id IS NULL")
+                    data = ", ".join([f"({d.id}, {d.location_id}, {d.year}, {d.value}, '{d.sex}')" for d in data])
+                    if data:
+                        query = f"INSERT INTO data (id, location_id, year, value, sex) VALUES {data}"
+                        r_cnx.execute(query)
+                    bar.next()
+            max_id = int(cnx.execute("SELECT MAX(id) FROM data").scalar())
+            print(f"{max_id} data rows to migrate")
+            num_iterations = (max_id // 100) + 1
+            with Bar('Data...') as bar:
+                for i in range(num_iterations):
+                    lower = 100 * i
+                    upper = 100 * (i+1)
+                    data = cnx.execute(f"SELECT * FROM data WHERE id > {lower} AND id <= {upper} AND name_id IS NOT NULL")
+                    data = ", ".join([f"({d.id}, {d.location_id}, {d.name_id}, {d.year}, {d.value}, '{d.sex}')" for d in data])
+                    if data:
+                        query = f"INSERT INTO data (id, location_id, name_id, year, value, sex) VALUES {data}"
+                        r_cnx.execute(query)
+                    bar.next()
+    print("Migration complete.")
+
+            
+
 def init_app(app):
     app.cli.add_command(init_db_command)
     app.cli.add_command(kill_db_command)
@@ -246,4 +301,5 @@ def init_app(app):
     app.cli.add_command(process_state)
     app.cli.add_command(load_all_data)
     app.cli.add_command(load_new_year)
+    app.cli.add_command(quick_migrate)
     app.teardown_appcontext(close_session)

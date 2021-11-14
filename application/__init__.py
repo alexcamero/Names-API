@@ -1,8 +1,7 @@
-from os import environ
-
-from markupsafe import escape
 from flask import Flask
-from sqlalchemy import MetaData, Table, select
+from sqlalchemy import select
+
+from .models import Name, init_app, get_session
 
 def create_app(test_config = None):
     app = Flask(__name__)
@@ -11,18 +10,18 @@ def create_app(test_config = None):
     else:
         app.config.from_mapping(test_config)
 
-    from . import models
-    models.init_app(app)
+    init_app(app)
     
-    @app.route('/<name>')
+    @app.route('/api/<name>')
     def hello(name):
-        sesh = models.get_session(remote = False)
-        result = sesh.select(models.Data)
-        
+        sesh = get_session()
+        stmt = select(Name).where(Name.name == name)
+        result = sesh.execute(stmt)
+        name = result.scalars().first() or Name(name = name)
+        return "<br>".join([f"{d!r}" for d in name.data])
 
     @app.route('/')
     def default():
-        x = environ.get('FLASK_APP')
-        return f"Hello, world. Check out this cool {x}."
+        return "<h1>Names API</h1><h2>Example Usage:</h2><p><a href='./api/Alexander'>/api/Alexander</a></p>"
 
     return app
