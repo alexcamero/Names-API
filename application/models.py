@@ -1,6 +1,6 @@
 from os import path, listdir
 
-from sqlalchemy import create_engine, MetaData, Table, Column, Integer, String, ForeignKey, select, Enum
+from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, select, Enum
 from sqlalchemy.orm import registry, relationship, Session
 import click
 from flask import current_app, g
@@ -124,6 +124,7 @@ def load_year_file(year, remote):
         data = Data(name = name, location = usa, value = int(row[2]), sex = row[1], year = year)
         sesh.add(data)
     sesh.commit()
+    print(f"Data for the United States {year} added successfully.")
     return True
 
 def load_state_file(state, remote, year = False):
@@ -154,6 +155,7 @@ def load_state_file(state, remote, year = False):
         data = Data(name = name, location = state, value = value, sex = sex, year = year)
         sesh.add(data)
     sesh.commit()
+    print(f"Completed {state_name} {sex or 'F'} {year}.")
     return True
 
 @click.command('process-year')
@@ -162,7 +164,6 @@ def load_state_file(state, remote, year = False):
 @with_appcontext
 def process_year(year, remote):
     load_year_file(year, remote)
-    print(f"Data for the United States {year} added successfully.")
     
 
 @click.command('process-state')
