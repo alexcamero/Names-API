@@ -1,9 +1,8 @@
 from os import path, listdir
 
-from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, select, Enum
-from sqlalchemy.orm import registry, relationship, Session
+from sqlalchemy import create_engine, select
 import click
-from flask import current_app, g
+from flask import current_app
 from flask.cli import with_appcontext
 from bs4 import BeautifulSoup as bs
 import requests
