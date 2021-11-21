@@ -41,3 +41,6 @@ class Data(Base):
 
     def __repr__(self):
         return f"Data(year = {self.year}, location = {self.location!r}, name = {self.name!r}, sex = {self.sex!r}, count = {self.value})"
+
+def test():
+    print('hey')

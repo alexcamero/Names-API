@@ -4,7 +4,8 @@ from flask import (
     Blueprint, request
 )
 
-from application.models import Name, Location, Data, get_engine
+from application.models import Name, Location, Data
+from application.db import get_engine
 
 bp = Blueprint('legacy', __name__, url_prefix = '/legacy')
 
