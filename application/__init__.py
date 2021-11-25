@@ -32,6 +32,9 @@ def create_app(test_config = None):
         name = result.scalars().first() or Name(name = name)
         return "<br>".join([f"{d!r}" for d in name.data])
 
+    from . import legacy
+    app.register_blueprint(legacy.bp)
+
     @app.route('/')
     def default():
         return "<h1>Names API</h1><h2>Example Usage:</h2><p><a href='./api/Alexander'>/api/Alexander</a></p>"
