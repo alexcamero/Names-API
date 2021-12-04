@@ -1,5 +1,4 @@
 from flask import Flask
-from sqlalchemy import select
 
 def init_app(app):
     from . import data, db
@@ -22,15 +21,8 @@ def create_app(test_config = None):
 
     init_app(app)
     
-    @app.route('/api/<name>')
-    def hello(name):
-        from .db import get_session
-        from .models import Name
-        sesh = get_session()
-        stmt = select(Name).where(Name.name == name)
-        result = sesh.execute(stmt)
-        name = result.scalars().first() or Name(name = name)
-        return "<br>".join([f"{d!r}" for d in name.data])
+    from . import main
+    app.register_blueprint(main.bp)
 
     from . import legacy
     app.register_blueprint(legacy.bp)
